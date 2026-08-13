@@ -1,0 +1,111 @@
+from langgraph.graph import StateGraph, END
+from orchestrator.state import AthenaState
+from agents.router import classify_intent
+from agents.docs_rag_agent import docs_rag_agent
+from agents.table_agent import table_agent
+from agents.ticket_agent import ticket_agent
+from agents.vision_agent import vision_agent
+
+def route_node(state: AthenaState) -> AthenaState:
+    state["intent"] = classify_intent(state["query"])
+    return state
+
+def docs_node(state: AthenaState) -> AthenaState:
+    result = docs_rag_agent(state["query"])
+    state["answer"] = result["answer"]
+    state["retrieved_chunks"] = result["chunks"]
+    
+    # Assess confidence using the Cross-Encoder score of the top retrieved chunk.
+    # Scores > -4.0 suggest a relevant document match.
+    if result["chunks"]:
+        max_score = max(c["score"] for c in result["chunks"])
+        if max_score > -4.0:
+            state["confidence"] = 0.9
+        else:
+            # Low relevance score triggers escalation
+            state["confidence"] = 0.3
+    else:
+        state["confidence"] = 0.2
+    return state
+
+def table_node(state: AthenaState) -> AthenaState:
+    import pandas as pd
+    import os
+    csv_path = "data/sample_table.csv"
+    if os.path.exists(csv_path):
+        df = pd.read_csv(csv_path)
+        result = table_agent(state["query"], df)
+        state["answer"] = f"Calculation Result:\n{result['answer']}\n(Expression: {result['code']})"
+        if "Could not compute:" in result["answer"]:
+            state["confidence"] = 0.3
+        else:
+            state["confidence"] = 0.9
+    else:
+        state["answer"] = f"Error: Database file {csv_path} not found."
+        state["confidence"] = 0.1
+    return state
+
+def ticket_node(state: AthenaState) -> AthenaState:
+    result = ticket_agent(state["query"])
+    state["answer"] = f"Priority: {result['priority']}\nRouting: {result['routing']}"
+    state["confidence"] = 0.8
+    return state
+
+def vision_node(state: AthenaState) -> AthenaState:
+    result = vision_agent("", state["query"])
+    state["answer"] = result["answer"]
+    # Since it is a stub / not implemented, confidence is low to force escalation
+    state["confidence"] = 0.4
+    return state
+
+def escalation_check(state: AthenaState) -> AthenaState:
+    state["needs_escalation"] = (state.get("confidence") or 0) < 0.5
+    return state
+
+def route_decision(state: AthenaState) -> str:
+    intent = state.get("intent", "docs_question")
+    return {
+        "docs_question": "docs",
+        "table_question": "table",
+        "ticket_request": "ticket",
+        "image_question": "vision",
+        "general_tool_use": "docs"
+    }.get(intent, "docs")
+
+# Build the LangGraph StateGraph
+graph = StateGraph(AthenaState)
+
+# Add all nodes
+graph.add_node("router", route_node)
+graph.add_node("docs", docs_node)
+graph.add_node("table", table_node)
+graph.add_node("ticket", ticket_node)
+graph.add_node("vision", vision_node)
+graph.add_node("escalation_check", escalation_check)
+
+# Define entry point and edges
+graph.set_entry_point("router")
+graph.add_conditional_edges(
+    "router",
+    route_decision,
+    {
+        "docs": "docs",
+        "table": "table",
+        "ticket": "ticket",
+        "vision": "vision"
+    }
+)
+graph.add_edge("docs", "escalation_check")
+graph.add_edge("table", "escalation_check")
+graph.add_edge("ticket", "escalation_check")
+graph.add_edge("vision", "escalation_check")
+graph.add_edge("escalation_check", END)
+
+athena_graph = graph.compile()
+
+if __name__ == "__main__":
+    import pprint
+    # Visual check of graph compilation
+    print("Graph compiled successfully. Executing test query:")
+    result = athena_graph.invoke({"query": "How do I contribute to this repo?"})
+    pprint.pprint(result)

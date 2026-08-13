@@ -1,0 +1,21 @@
+asset_id,asset_name,department,status,cost,assigned_to
+ASSET_001,MacBook Pro 16,Engineering,Active,2500,Alice Smith
+ASSET_002,Dell XPS 15,Engineering,Active,1800,Bob Johnson
+ASSET_003,iPhone 15 Pro,Sales,Active,1000,Charlie Brown
+ASSET_004,ThinkPad X1 Carbon,HR,Active,1600,Diana Prince
+ASSET_005,MacBook Air 15,Marketing,Active,1300,Evan Wright
+ASSET_006,iPad Pro,Design,Repair,1100,Fiona Gallagher
+ASSET_007,Monitor Dell 27,Engineering,Active,350,Alice Smith
+ASSET_008,Dell XPS 13,Finance,Active,1400,George Costanza
+ASSET_009,MacBook Pro 14,Engineering,Active,2000,Helen Keller
+ASSET_010,iPhone 15,Sales,Active,800,Ian Malcolm
+ASSET_011,iPad Air,Marketing,Active,600,Jack Ryan
+ASSET_012,ThinkPad T14,Operations,Active,1200,Kate Bishop
+ASSET_013,Dell Latitude,Sales,Retired,900,Leo Fitz
+ASSET_014,Mac Studio,Engineering,Active,3900,Melinda May
+ASSET_015,Monitor LG 34,Design,Active,600,Fiona Gallagher
+ASSET_016,MacBook Pro 16,Finance,Repair,2500,George Costanza
+ASSET_017,Dell XPS 15,HR,Active,1800,Diana Prince
+ASSET_018,iPhone 14,Operations,Retired,700,Kate Bishop
+ASSET_019,ThinkPad X1 Carbon,Engineering,Active,1600,Ned Stark
+ASSET_020,MacBook Air 13,Sales,Active,1000,Oliver Queen
