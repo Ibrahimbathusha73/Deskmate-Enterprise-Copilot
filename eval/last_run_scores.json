@@ -1,0 +1,36 @@
+{
+  "summary": {
+    "faithfulness": 1.0,
+    "answer_relevancy": 0.7497520376618585,
+    "context_precision": 0.9999999999666667,
+    "context_recall": 1.0
+  },
+  "details": [
+    {
+      "question": "Why does the initialization of A_log under bfloat16 cause negative infinity in GatedDeltaNet models?",
+      "answer": "The initialization of `A_log` under `bfloat16` causes negative infinity in GatedDeltaNet models because `torch.empty(self.num_v_heads).uniform_(0, 16)` can round a sampled value down to `0.0` with probability \u2248 0.4% per head when the model is initialized under `bfloat16` default dtype. This is because `uniform_(0, 16)` in `bfloat16` can result in a value of exactly `0.0` due to the properties of the `bfloat16` data type. When `torch.log(0)` is computed, it results in `-inf`. This `-inf` gets baked into `A_log`, permanently zeroing that head's decay term and freezing its gradient for the rest of training. (Source ID: github_issue_47831_0)",
+      "contexts": [
+        "Issue #47944: Fix GatedDeltaNet A_log dtype to prevent -inf under bfloat16 init State: open # What does this PR do? `Qwen3_5GatedDeltaNet`, `Qwen3_5MoeGatedDeltaNet`, and `Qwen3NextGatedDeltaNet` sample `A_log` via: ```python A = torch.empty(self.num_v_heads).uniform_(0, 16) self.A_log = nn.Parameter(torch.log(A)) ``` and re-sample it the same way in each model's `_init_weights`. When the model is initialized under a `bfloat16` default dtype (e.g., `.from_config(config, dtype=torch.bfloat16)`), `uniform_(0, 16)` can round a sampled value down to `0`, and `log(0) == -inf`. That `-inf` gets baked into `A_log`, permanently zeroing that head's decay term and freezing its gradient for the rest of training. This PR samples `A` in `float32` explicitly (independent of the ambient default dtype) before taking the log, in both the module constructor and `_init_weights`, for all three affected models mentioned above. It also adds a regression test (`test_gated_delta_net_a_log_finite_under_bfloat1",
+        "Issue #47831: `Qwen3_5GatedDeltaNet` / `Qwen3_5MoeGatedDeltaNet` initialize `A_log` to `-inf` on some heads (bf16 models) State: open ### System Info - `transformers` version: 5.14.0 - Platform: Linux (glibc 2.34) - Python version: 3.12.5 - PyTorch version (GPU?): 2.13.0+cu126 (yes, 8\u00d7 NVIDIA H200) - Model: Qwen3.5-MoE hybrid (40 layers = 30 GatedDeltaNet + 10 full attention, 256 experts), trained from scratch in bf16 Output of `transformers env` is consistent with the above. ### Who can help? Text/hybrid (linear-attention) models \u2014 Qwen3.5 GatedDeltaNet (@ArthurZucker @Cyrilvallez @vasqu) ### Information - [x] The official example scripts - [ ] My own modified scripts ### Tasks - [x] An officially supported task in the `examples` folder (such as GLUE/SQuAD, ...) - [ ] My own task or dataset (give details below) ### Reproduction When a Qwen3.5 (`qwen3_5`) or Qwen3.5-MoE (`qwen3_5_moe`) model is instantiated in bfloat16 (the normal case for `from_config(..., dtype=torch.bfloat16)` or `f",
+        "Issue #47887: fix(qwen3_5,qwen3_next): sample GatedDeltaNet A in float32 to avoid -\u2026 State: closed <!-- ci-dashboard-badge:start --> [![CI](https://transformers-ci.lor-e.huggingface.cool/badge/pr?pr=47887)](https://transformers-ci.lor-e.huggingface.cool/d/pytest-observability-by-pr/pytest-observability-branch?var-pr=47887) <!-- ci-dashboard-badge:end --> # fix(qwen3_5,qwen3_next): sample GatedDeltaNet A in float32 to avoid -inf A_log under bf16 Under `bfloat16` `torch.empty(...).uniform_(0,16)` can round to `0.0` so `log(A)` becomes `-inf`, freezing that head's decay at `0`. Sample `A` in `float32` before `log` in `__init__` and `_init_weights` for `Qwen3_5`, `Qwen3_5-MoE` and `Qwen3-Next` (modeling + modular). Matches `Mamba2`. Fixes #47831 # What does this PR do? Fixes #47831 Under `bfloat16`, the GatedDeltaNet decay parameter `A_log` is initialized from `A = torch.empty(self.num_v_heads).uniform_(0,16)` which inherits the model's `dtype`. In `bfloat16` that `uniform_(0,16)` rounds t"
+      ],
+      "ground_truth": "In GatedDeltaNet models, A_log is sampled using a uniform distribution between 0 and 16, and then initialized as nn.Parameter(torch.log(A)). Under bfloat16, values close to zero can result in torch.log(A) evaluating to negative infinity (-inf)."
+    },
+    {
+      "question": "What is the total cost of all active assets in the HR department?",
+      "answer": "Calculation Result:\n3400\n(Expression: df[(df['department'] == 'HR') & (df['status'] == 'Active')]['cost'].sum())",
+      "contexts": [
+        ""
+      ],
+      "ground_truth": "3400"
+    },
+    {
+      "question": "Help! My screen is cracked and leaking ink. I need an emergency laptop replacement.",
+      "answer": "Priority: urgent\nRouting: Escalate to the hardware replacement team for immediate assistance",
+      "contexts": [
+        ""
+      ],
+      "ground_truth": "Priority: urgent"
+    }
+  ]
+}

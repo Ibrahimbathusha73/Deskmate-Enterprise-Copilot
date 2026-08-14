@@ -1,0 +1,152 @@
+[
+  {
+    "question": "Why does the initialization of A_log under bfloat16 cause negative infinity in GatedDeltaNet models?",
+    "expected_answer": "In GatedDeltaNet models, A_log is sampled using a uniform distribution between 0 and 16, and then initialized as nn.Parameter(torch.log(A)). Under bfloat16, values close to zero can result in torch.log(A) evaluating to negative infinity (-inf).",
+    "agent": "docs"
+  },
+  {
+    "question": "What does the PR for proper separation of tests do?",
+    "expected_answer": "It branches off test structures to separate integration or specific testing scenarios cleanly.",
+    "agent": "docs"
+  },
+  {
+    "question": "What issues occur in nemotron_h (Nemotron 3.5 Lightning) when dispatched under multi-GPU device_map?",
+    "expected_answer": "It results in silently wrong outputs due to cache corruption and split-boundary-dependent garbage, and the fused kernel path crashes under hooks.",
+    "agent": "docs"
+  },
+  {
+    "question": "What operators and data types are used for varlen vision attention in the Exporters PR?",
+    "expected_answer": "It uses native aten operators and tests using the bfloat16 (bf16) data type.",
+    "agent": "docs"
+  },
+  {
+    "question": "What configuration parameter is halved on every save and reload in Gemma, and how is it resolved?",
+    "expected_answer": "The sliding_window parameter is halved on every config save/reload. It is resolved by correcting config save/reload handling.",
+    "agent": "docs"
+  },
+  {
+    "question": "Which attention dispatches are supported in TimmWrapper by PR 47939?",
+    "expected_answer": "It adds support for SDPA (scaled dot product attention) and eager attention dispatch in TimmWrapper.",
+    "agent": "docs"
+  },
+  {
+    "question": "What error was the emu3 integration test failing with, and how many tests were failing?",
+    "expected_answer": "One integration test was failing with output_mismatch (specifically, list output differs (1)).",
+    "agent": "docs"
+  },
+  {
+    "question": "Why were the got_ocr2 integration tests failing in the nightly CI?",
+    "expected_answer": "Two integration tests were failing with the 'other' failure group.",
+    "agent": "docs"
+  },
+  {
+    "question": "What documentation features were added for vision processors?",
+    "expected_answer": "It adds documentation for torchcodec and vision processor features.",
+    "agent": "docs"
+  },
+  {
+    "question": "What new jobs were added to the CI on dedicated runners for vLLM testing?",
+    "expected_answer": "The new jobs added are vllm-test-init and vllm-test-transformers.",
+    "agent": "docs"
+  },
+  {
+    "question": "How is LoRA training on Mamba+MoE models fixed in grouped_mm_fallback?",
+    "expected_answer": "It ensures tensor dtype consistency to fix dtype mismatch in grouped_mm_fallback for LoRA training.",
+    "agent": "docs"
+  },
+  {
+    "question": "Why is speculative decoding losslessness broken when using do_sample=True?",
+    "expected_answer": "The candidate generators return a probability distribution q that they did not actually sample from, breaking losslessness.",
+    "agent": "docs"
+  },
+  {
+    "question": "At what token should DFlash drafts be cropped?",
+    "expected_answer": "DFlash drafts should be cropped at the first EOS (End of Sequence) token.",
+    "agent": "docs"
+  },
+  {
+    "question": "Who are the maintainers mentioned to help with security bumping in dependency_versions_table.py?",
+    "expected_answer": "@ArthurZucker and @Cyrilvallez are the maintainers mentioned to help with security bumping.",
+    "agent": "docs"
+  },
+  {
+    "question": "What import error is reported in transformers 5.15.0 for MetaCLIP2Model?",
+    "expected_answer": "ImportError: cannot import name 'MetaCLIP2Model' from 'transformers'.",
+    "agent": "docs"
+  },
+  {
+    "question": "What is the total cost of all active assets in the HR department?",
+    "expected_answer": "3400",
+    "agent": "table"
+  },
+  {
+    "question": "Which assets are currently under Repair?",
+    "expected_answer": "iPad Pro and MacBook Pro 16",
+    "agent": "table"
+  },
+  {
+    "question": "Who is assigned the LG 34 monitor?",
+    "expected_answer": "Fiona Gallagher",
+    "agent": "table"
+  },
+  {
+    "question": "How many assets are assigned to Alice Smith?",
+    "expected_answer": "2",
+    "agent": "table"
+  },
+  {
+    "question": "What is the average cost of assets assigned to Diana Prince?",
+    "expected_answer": "1700",
+    "agent": "table"
+  },
+  {
+    "question": "What is the most expensive active asset in the Engineering department?",
+    "expected_answer": "Mac Studio",
+    "agent": "table"
+  },
+  {
+    "question": "How many assets have the status Retired?",
+    "expected_answer": "2",
+    "agent": "table"
+  },
+  {
+    "question": "What is the total cost of all assets assigned to Fiona Gallagher?",
+    "expected_answer": "1700",
+    "agent": "table"
+  },
+  {
+    "question": "Help! My screen is cracked and leaking ink. I need an emergency laptop replacement.",
+    "expected_answer": "Priority: urgent",
+    "agent": "ticket"
+  },
+  {
+    "question": "Can you help me configure my email signature in Outlook?",
+    "expected_answer": "Priority: low",
+    "agent": "ticket"
+  },
+  {
+    "question": "Our team cannot log into the production server. We get a 500 internal server error.",
+    "expected_answer": "Priority: urgent",
+    "agent": "ticket"
+  },
+  {
+    "question": "Please add John Doe to the engineering slack channel when you get a chance.",
+    "expected_answer": "Priority: low",
+    "agent": "ticket"
+  },
+  {
+    "question": "The network router in the Sales room is flashing red and nobody can connect to Wi-Fi.",
+    "expected_answer": "Priority: high",
+    "agent": "ticket"
+  },
+  {
+    "question": "What is the stock price of Apple Inc. today?",
+    "expected_answer": "I don't know",
+    "agent": "out_of_scope"
+  },
+  {
+    "question": "Can you write a poem about the moon?",
+    "expected_answer": "I don't know",
+    "agent": "out_of_scope"
+  }
+]

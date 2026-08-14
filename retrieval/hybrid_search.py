@@ -1,3 +1,5 @@
+import torch
+torch.set_num_threads(1)
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import chromadb
@@ -7,7 +9,7 @@ reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 client = chromadb.PersistentClient(path="data/chroma_db")
 collection = client.get_or_create_collection("athena_docs")
 
-def hybrid_search(query, top_k=20, final_k=5):
+def hybrid_search(query, top_k=20, final_k=3):
     # dense search
     q_emb = embed_model.encode([query]).tolist()
     dense_results = collection.query(query_embeddings=q_emb, n_results=top_k)
