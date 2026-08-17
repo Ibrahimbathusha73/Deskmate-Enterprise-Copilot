@@ -7,6 +7,9 @@ load_dotenv()
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+from langfuse.decorators import observe, langfuse_context
+
+@observe(as_type="generation", name="table_agent")
 def table_agent(query: str, df: pd.DataFrame) -> dict:
     schema = "\n".join([f"- {col}: type {df[col].dtype}" for col in df.columns])
     sample_rows = df.head(3).to_string()
@@ -34,7 +37,18 @@ Answer:"""
         temperature=0,
     )
     
-    code = resp.choices[0].message.content.strip()
+    content = resp.choices[0].message.content
+    code = content.strip()
+    
+    langfuse_context.update_current_observation(
+        input=prompt,
+        output=content,
+        model="llama-3.1-8b-instant",
+        usage={
+            "prompt_tokens": resp.usage.prompt_tokens,
+            "completion_tokens": resp.usage.completion_tokens
+        }
+    )
     
     # Clean up code blocks if the LLM outputted them
     if code.startswith("```"):

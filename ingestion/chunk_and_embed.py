@@ -16,10 +16,13 @@ def chunk_text(text, size=500, overlap=50):
         i += size - overlap
     return chunks
 
+from ops.pii_redact import redact
+
 def embed_and_store(docs: list[dict]):
     """docs = [{'id': str, 'text': str, 'source': str}]"""
     for doc in docs:
-        chunks = chunk_text(doc["text"])
+        redacted_text = redact(doc["text"])
+        chunks = chunk_text(redacted_text)
         if not chunks:
             continue
         embeddings = model.encode(chunks).tolist()

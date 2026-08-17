@@ -16,4 +16,4 @@ pydantic
 redis
 streamlit
 pytest
-
+langfuse<3.0.0

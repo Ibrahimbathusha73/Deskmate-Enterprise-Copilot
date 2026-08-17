@@ -6,13 +6,15 @@ from agents.table_agent import table_agent
 from agents.ticket_agent import ticket_agent
 from agents.vision_agent import vision_agent
 
+from ops.pii_redact import redact
+
 def route_node(state: AthenaState) -> AthenaState:
     state["intent"] = classify_intent(state["query"])
     return state
 
 def docs_node(state: AthenaState) -> AthenaState:
     result = docs_rag_agent(state["query"])
-    state["answer"] = result["answer"]
+    state["answer"] = redact(result["answer"])
     state["retrieved_chunks"] = result["chunks"]
     
     # Assess confidence using the Cross-Encoder score of the top retrieved chunk.
@@ -35,25 +37,25 @@ def table_node(state: AthenaState) -> AthenaState:
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         result = table_agent(state["query"], df)
-        state["answer"] = f"Calculation Result:\n{result['answer']}\n(Expression: {result['code']})"
+        state["answer"] = redact(f"Calculation Result:\n{result['answer']}\n(Expression: {result['code']})")
         if "Could not compute:" in result["answer"]:
             state["confidence"] = 0.3
         else:
             state["confidence"] = 0.9
     else:
-        state["answer"] = f"Error: Database file {csv_path} not found."
+        state["answer"] = redact(f"Error: Database file {csv_path} not found.")
         state["confidence"] = 0.1
     return state
 
 def ticket_node(state: AthenaState) -> AthenaState:
     result = ticket_agent(state["query"])
-    state["answer"] = f"Priority: {result['priority']}\nRouting: {result['routing']}"
+    state["answer"] = redact(f"Priority: {result['priority']}\nRouting: {result['routing']}")
     state["confidence"] = 0.8
     return state
 
 def vision_node(state: AthenaState) -> AthenaState:
     result = vision_agent("", state["query"])
-    state["answer"] = result["answer"]
+    state["answer"] = redact(result["answer"])
     # Since it is a stub / not implemented, confidence is low to force escalation
     state["confidence"] = 0.4
     return state

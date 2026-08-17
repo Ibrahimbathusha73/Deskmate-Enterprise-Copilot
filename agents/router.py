@@ -6,8 +6,11 @@ load_dotenv()
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+from langfuse.decorators import observe, langfuse_context
+
 INTENTS = ["docs_question", "table_question", "image_question", "ticket_request", "general_tool_use"]
 
+@observe(as_type="generation", name="classify_intent")
 def classify_intent(query: str) -> str:
     prompt = f"""Classify the user's query into exactly one label from the following list: {INTENTS}.
 
@@ -27,7 +30,19 @@ Query: "{query}"
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
     )
-    label = resp.choices[0].message.content.strip().strip("'\"` ")
+    content = resp.choices[0].message.content
+    label = content.strip().strip("'\"` ")
+    
+    langfuse_context.update_current_observation(
+        input=prompt,
+        output=content,
+        model="llama-3.1-8b-instant",
+        usage={
+            "prompt_tokens": resp.usage.prompt_tokens,
+            "completion_tokens": resp.usage.completion_tokens
+        }
+    )
+    
     # Fallback to docs_question if classification matches none
     if label not in INTENTS:
         # Check if the label is contained in INTENTS

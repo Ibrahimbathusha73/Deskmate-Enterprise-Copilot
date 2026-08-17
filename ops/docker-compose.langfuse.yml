@@ -1,0 +1,18 @@
+version: "3"
+services:
+  langfuse:
+    image: langfuse/langfuse:2
+    ports: ["3000:3000"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - NEXTAUTH_SECRET=changeme
+      - NEXTAUTH_URL=http://localhost:3000
+      - SALT=changeme
+    depends_on: [db]
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    volumes: ["langfuse_db:/var/lib/postgresql/data"]
+volumes:
+  langfuse_db:

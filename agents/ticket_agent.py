@@ -8,6 +8,9 @@ load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 PRIORITIES = ["low", "medium", "high", "urgent"]
 
+from langfuse.decorators import observe, langfuse_context
+
+@observe(as_type="generation", name="ticket_agent")
 def ticket_agent(query: str) -> dict:
     prompt = f"""Classify the priority of this support request into exactly one of {PRIORITIES}, and give a one-sentence routing recommendation.
 Request: "{query}"
@@ -25,7 +28,19 @@ Do not include any explanation, markdown, code blocks, or text outside the JSON.
         temperature=0,
     )
     
-    content = resp.choices[0].message.content.strip()
+    content = resp.choices[0].message.content
+    
+    langfuse_context.update_current_observation(
+        input=prompt,
+        output=content,
+        model="llama-3.1-8b-instant",
+        usage={
+            "prompt_tokens": resp.usage.prompt_tokens,
+            "completion_tokens": resp.usage.completion_tokens
+        }
+    )
+    
+    content_stripped = content.strip()
     
     # Clean up code blocks if they exist
     if content.startswith("```"):
