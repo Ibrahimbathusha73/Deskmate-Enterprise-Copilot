@@ -29,7 +29,7 @@ Do not include any explanation, markdown, code blocks, or text outside the JSON.
 """
 
     resp = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
     )
@@ -39,7 +39,7 @@ Do not include any explanation, markdown, code blocks, or text outside the JSON.
     langfuse_context.update_current_observation(
         input=prompt,
         output=content,
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         usage={
             "prompt_tokens": resp.usage.prompt_tokens,
             "completion_tokens": resp.usage.completion_tokens

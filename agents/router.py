@@ -38,7 +38,7 @@ Assistant: table_question
 </user_query>"""
 
     resp = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -51,7 +51,7 @@ Assistant: table_question
     langfuse_context.update_current_observation(
         input=f"{system_prompt}\n{user_prompt}",
         output=content,
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         usage={
             "prompt_tokens": resp.usage.prompt_tokens,
             "completion_tokens": resp.usage.completion_tokens

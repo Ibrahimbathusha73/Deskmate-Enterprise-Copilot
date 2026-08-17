@@ -28,13 +28,13 @@ def test_is_unanswerable():
 
 @patch("agents.docs_rag_agent.client")
 def test_model_tiering_fallback(mock_client):
-    # Mock response for llama-3.1-8b-instant indicating it cannot answer
+    # Mock response for openai/gpt-oss-20b indicating it cannot answer
     mock_resp_8b = MagicMock()
     mock_resp_8b.choices[0].message.content = "I do not have enough information to answer this query."
     mock_resp_8b.usage.prompt_tokens = 50
     mock_resp_8b.usage.completion_tokens = 15
     
-    # Mock response for llama-3.3-70b-versatile
+    # Mock response for openai/gpt-oss-120b
     mock_resp_70b = MagicMock()
     mock_resp_70b.choices[0].message.content = "Detailed fallback answer from 70B."
     mock_resp_70b.usage.prompt_tokens = 100
@@ -58,8 +58,8 @@ def test_model_tiering_fallback(mock_client):
         
         # Verify the model parameters passed
         calls = mock_client.chat.completions.create.call_args_list
-        assert calls[0][1]["model"] == "llama-3.1-8b-instant"
-        assert calls[1][1]["model"] == "llama-3.3-70b-versatile"
+        assert calls[0][1]["model"] == "openai/gpt-oss-20b"
+        assert calls[1][1]["model"] == "openai/gpt-oss-120b"
 
 def test_semantic_caching_integration():
     # Verify local Redis connectivity

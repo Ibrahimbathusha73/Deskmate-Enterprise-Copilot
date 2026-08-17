@@ -85,31 +85,31 @@ Cite your sources by mentioning their source ID. If the context does not contain
 </question>
 """
 
-    # 3. First tier call: llama-3.1-8b-instant (low cost)
-    print("[MODEL TIERING] Querying llama-3.1-8b-instant...")
+    # 3. First tier call: openai/gpt-oss-20b (low cost)
+    print("[MODEL TIERING] Querying openai/gpt-oss-20b...")
     resp_8b = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
     )
     answer_8b = resp_8b.choices[0].message.content.strip()
     prompt_tokens = resp_8b.usage.prompt_tokens
     completion_tokens = resp_8b.usage.completion_tokens
-    model_used = "llama-3.1-8b-instant"
+    model_used = "openai/gpt-oss-20b"
     final_answer = answer_8b
 
-    # 4. Check for unanswerability, fallback to llama-3.3-70b-versatile (high performance)
+    # 4. Check for unanswerability, fallback to openai/gpt-oss-120b (high performance)
     if is_unanswerable(answer_8b):
-        print("[MODEL TIERING] 8B returned unanswerable response. Falling back to llama-3.3-70b-versatile...")
+        print("[MODEL TIERING] 8B returned unanswerable response. Falling back to openai/gpt-oss-120b...")
         resp_70b = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
         )
         answer_70b = resp_70b.choices[0].message.content.strip()
         prompt_tokens += resp_70b.usage.prompt_tokens
         completion_tokens += resp_70b.usage.completion_tokens
-        model_used = "llama-3.3-70b-versatile"
+        model_used = "openai/gpt-oss-120b"
         final_answer = answer_70b
 
     # 5. Save to semantic cache

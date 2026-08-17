@@ -23,10 +23,10 @@ The following diagram illustrates the routing and decision pipeline within the L
 
 ```mermaid
 graph TD
-    Entry([__start__]) --> Router[router: llama-3.1-8b]
-    Router -->|docs_question / general_tool_use| Docs[docs agent: llama-3.1-8b / 70b fallback]
-    Router -->|table_question| Table[table agent: llama-3.1-8b]
-    Router -->|ticket_request| Ticket[ticket agent: llama-3.1-8b]
+    Entry([__start__]) --> Router[router: gpt-oss-20b]
+    Router -->|docs_question / general_tool_use| Docs[docs agent: gpt-oss-20b / 120b fallback]
+    Router -->|table_question| Table[table agent: gpt-oss-20b]
+    Router -->|ticket_request| Ticket[ticket agent: gpt-oss-20b]
     Router -->|image_question| Vision[vision agent: stub]
     
     Docs --> EscalationCheck[escalation_check node]
@@ -93,8 +93,8 @@ Using local `BAAI/bge-small-en-v1.5` embeddings to perform cosine similarity che
 
 ### Model Tiering Cascade
 We deployed a model-tiering strategy in the Docs Agent:
-1. Simpler/standard queries are run first using `llama-3.1-8b-instant` ($0.05 / 1M input tokens).
-2. If the 8B model expresses inability to answer (caught via trigger phrases), the system falls back to `llama-3.3-70b-versatile` ($0.59 / 1M input tokens).
+1. Simpler/standard queries are run first using `openai/gpt-oss-20b` ($0.05 / 1M input tokens).
+2. If the 8B model expresses inability to answer (caught via trigger phrases), the system falls back to `openai/gpt-oss-120b` ($0.59 / 1M input tokens).
 - **Impact**: Saved **~80% of documentation LLM costs** by resolving 8 out of 10 general questions on the lightweight 8B model.
 
 ---

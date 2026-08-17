@@ -80,7 +80,7 @@ def run_evaluation():
     print("Initializing Groq LLM Judge and local HuggingFace embeddings for Ragas...")
     # Use Llama 3.1 8B on Groq for the judge
     llm = ChatGroq(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         temperature=0,
         groq_api_key=os.getenv("GROQ_API_KEY")
     )
