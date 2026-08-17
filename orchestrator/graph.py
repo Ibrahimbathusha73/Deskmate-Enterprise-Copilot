@@ -61,7 +61,50 @@ def vision_node(state: AthenaState) -> AthenaState:
     return state
 
 def escalation_check(state: AthenaState) -> AthenaState:
-    state["needs_escalation"] = (state.get("confidence") or 0) < 0.5
+    needs_esc = (state.get("confidence") or 0) < 0.5
+    state["needs_escalation"] = needs_esc
+    if needs_esc:
+        try:
+            import sqlite3
+            import datetime
+            import os
+            
+            db_dir = "data"
+            os.makedirs(db_dir, exist_ok=True)
+            db_path = os.path.join(db_dir, "escalations.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS escalations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT,
+                    query TEXT,
+                    agent_attempted TEXT,
+                    confidence REAL,
+                    reason TEXT
+                )
+            """)
+            
+            agent_attempted = state.get("intent", "unknown")
+            confidence = state.get("confidence", 0.0)
+            reason = f"Confidence {confidence} is below escalation threshold 0.5"
+            
+            cursor.execute("""
+                INSERT INTO escalations (timestamp, query, agent_attempted, confidence, reason)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                datetime.datetime.utcnow().isoformat(),
+                state.get("query", ""),
+                agent_attempted,
+                confidence,
+                reason
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Error logging escalation: {e}")
+            
+        state["answer"] = "I'm not confident enough in this answer — this has been routed to a human for follow-up."
     return state
 
 def route_decision(state: AthenaState) -> str:
