@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.chroma/
+data/chroma_db/
+data/*.db
+.git
+.env
+.gitignore
+tests/
+eval/last_run_scores.json
+.DS_Store
