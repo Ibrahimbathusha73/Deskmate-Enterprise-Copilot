@@ -1,3 +1,13 @@
+---
+title: Athena
+emoji: 🛡️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Athena Enterprise Copilot Case Study
 
 Athena is an enterprise-grade multi-agent copilot designed to securely and efficiently triage customer queries, search database tables, retrieve relevant engineering documentation, and handle ticket routing under strict security policies.
