@@ -1,4 +1,4 @@
-# Athena — Enterprise Multi-Agent Knowledge & Ops Copilot
+# Deskmate — Enterprise Multi-Agent Knowledge & Ops Copilot
 
 **One-liner:** An internal "ChatGPT for the company" that routes employee questions across specialized agents (docs RAG, structured data, visual documents, ticket triage) with production-grade evaluation, observability, and cost controls — not a chatbot wrapper, but a governed AI platform a real enterprise could actually run.
 
@@ -8,7 +8,7 @@
 
 Mid-size companies (200–5,000 employees) have knowledge scattered across Confluence/Notion pages, PDFs, spreadsheets, scanned receipts/forms, and a helpdesk ticket queue. Employees waste time hunting for answers, and support/ops teams re-answer the same questions. A single LLM chat window isn't enough because the underlying data is heterogeneous (text, tables, images, tickets) and enterprises need **auditability, cost control, and measurable accuracy** — not just a slick demo.
 
-Athena is positioned as an **internal IT/HR/Ops copilot**: employees ask questions in natural language; a router agent decides whether the answer lives in a document, a spreadsheet, an image/scanned form, or requires opening/classifying a support ticket — then a specialist agent handles it, with every answer traceable to a source and every deployment gated by an eval suite.
+Deskmate is positioned as an **internal IT/HR/Ops copilot**: employees ask questions in natural language; a router agent decides whether the answer lives in a document, a spreadsheet, an image/scanned form, or requires opening/classifying a support ticket — then a specialist agent handles it, with every answer traceable to a source and every deployment gated by an eval suite.
 
 ---
 
@@ -21,16 +21,16 @@ Athena is positioned as an **internal IT/HR/Ops copilot**: employees ask questio
                                 │ intent + zero-shot classification
         ┌───────────┬──────────┼──────────┬────────────────┐
         ▼           ▼          ▼          ▼                ▼
-   ┌─────────┐ ┌──────────┐ ┌────────┐ ┌────────────┐ ┌───────────┐
-   │ Docs RAG│ │ Table/SQL│ │ Vision │ │ Ticket     │ │ Tool/MCP  │
-   │  Agent  │ │  Agent   │ │ Agent  │ │ Triage     │ │ Agent     │
-   └─────────┘ └──────────┘ └────────┘ └────────────┘ └───────────┘
-        │           │          │          │                │
-        └───────────┴────┬─────┴──────────┴────────────────┘
-                          ▼
-                 Response Synthesizer + Citations
-                          ▼
-                 Confidence check → low? → human-in-the-loop escalation
+    ┌─────────┐ ┌──────────┐ ┌────────┐ ┌────────────┐ ┌───────────┐
+    │ Docs RAG│ │ Table/SQL│ │ Vision │ │ Ticket     │ │ Tool/MCP  │
+    │  Agent  │ │  Agent   │ │ Agent  │ │ Triage     │ │ Agent     │
+    └─────────┘ └──────────┘ └────────┘ └────────────┘ └───────────┘
+         │           │          │          │                │
+         └───────────┴────┬─────┴──────────┴────────────────┘
+                           ▼
+                  Response Synthesizer + Citations
+                           ▼
+                  Confidence check → low? → human-in-the-loop escalation
 ```
 
 - **Orchestrator Agent** — routes using zero-shot classification on intent + conversation state; LangGraph gives you explicit state, retries, and conditional edges (better portfolio signal than a single ReAct loop).
@@ -39,11 +39,11 @@ Athena is positioned as an **internal IT/HR/Ops copilot**: employees ask questio
 - **Vision Agent** — handles screenshots, scanned invoices/receipts, diagrams via document QA + visual document retrieval + OCR fallback.
 - **Ticket Triage Agent** — classifies and routes incoming support requests (zero-shot classification + text classification for priority/sentiment).
 - **Tool/MCP Agent** — calls external systems (calendar, GitHub issues, internal APIs) through MCP servers, demonstrating standardized tool-use rather than hand-rolled function calling.
-- **Human-in-the-loop gate** — if retrieval confidence or eval-time faithfulness score is low, escalate instead of hallucinate. This single feature is disproportionately impressive to interviewers because it shows you understand LLM failure modes.
+- **Human-in-the-loop gate** — if retrieval confidence or eval-time faithfulness score is low, escalate instead of hallucinate. This feature is impressive because it shows you understand LLM failure modes.
 
 ---
 
-## 3. Hugging Face Tasks Used (from your screenshot)
+## 3. Hugging Face Tasks Used
 
 | Task | Where it's used |
 |---|---|
@@ -118,7 +118,7 @@ Avoid synthetic-only data — pull from at least one real source to make the dem
 
 ## 8. Mapping to Real AI Engineering JDs
 
-| JD phrase you'll see | What in Athena proves it |
+| JD phrase you'll see | What in Deskmate proves it |
 |---|---|
 | "Build and maintain RAG pipelines" | Hybrid search + re-ranking + citation grounding |
 | "Experience with agentic workflows / LangGraph / multi-agent systems" | Orchestrator + 5 specialist agents with explicit state |
@@ -136,6 +136,15 @@ Avoid synthetic-only data — pull from at least one real source to make the dem
 - *"Improved retrieval recall@5 by ~30% over dense-only baseline using hybrid BM25+dense search with cross-encoder re-ranking."*
 - *"Cut average per-query LLM cost by ~40% via model tiering (Haiku for routing, Sonnet for synthesis) and Redis semantic caching."*
 - *"Built an automated eval + regression suite (RAGAS, promptfoo) integrated into GitHub Actions, blocking prompt/agent regressions before merge."*
+- *"Implemented human-in-the-loop escalation for low-confidence responses, reducing hallucinated answers to 0 in adversarial red-team testing."*
+
+---
+
+## 10. Portfolio Presentation Tips
+
+- Ship a **1–2 page case study** (problem → architecture diagram → eval numbers before/after → cost numbers → what you'd do at 10x scale).
+- Record a **3-minute demo video** showing the router picking different agents for different question types — interviewers rarely read code but will watch this.
+- Put the **eval dashboard front and center** in your README; it's the single biggest differentiator between "I called an API" and "I built an AI system."tions, blocking prompt/agent regressions before merge."*
 - *"Implemented human-in-the-loop escalation for low-confidence responses, reducing hallucinated answers to 0 in adversarial red-team testing."*
 
 ---

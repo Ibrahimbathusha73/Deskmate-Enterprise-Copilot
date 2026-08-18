@@ -1,5 +1,5 @@
 from langgraph.graph import StateGraph, END
-from orchestrator.state import AthenaState
+from orchestrator.state import DeskmateState
 from agents.router import classify_intent
 from agents.docs_rag_agent import docs_rag_agent
 from agents.table_agent import table_agent
@@ -8,11 +8,11 @@ from agents.vision_agent import vision_agent
 
 from ops.pii_redact import redact
 
-def route_node(state: AthenaState) -> AthenaState:
+def route_node(state: DeskmateState) -> DeskmateState:
     state["intent"] = classify_intent(state["query"])
     return state
 
-def docs_node(state: AthenaState) -> AthenaState:
+def docs_node(state: DeskmateState) -> DeskmateState:
     result = docs_rag_agent(state["query"])
     state["answer"] = redact(result["answer"])
     state["retrieved_chunks"] = result["chunks"]
@@ -33,7 +33,7 @@ def docs_node(state: AthenaState) -> AthenaState:
         state["confidence"] = 0.2
     return state
 
-def table_node(state: AthenaState) -> AthenaState:
+def table_node(state: DeskmateState) -> DeskmateState:
     import pandas as pd
     import os
     csv_path = "data/sample_table.csv"
@@ -53,7 +53,7 @@ def table_node(state: AthenaState) -> AthenaState:
         state["confidence"] = 0.1
     return state
 
-def ticket_node(state: AthenaState) -> AthenaState:
+def ticket_node(state: DeskmateState) -> DeskmateState:
     result = ticket_agent(state["query"])
     state["answer"] = redact(f"Priority: {result['priority']}\nRouting: {result['routing']}")
     state["agent"] = "TICKET_AGENT"
@@ -62,7 +62,7 @@ def ticket_node(state: AthenaState) -> AthenaState:
     state["confidence"] = 0.8
     return state
 
-def vision_node(state: AthenaState) -> AthenaState:
+def vision_node(state: DeskmateState) -> DeskmateState:
     result = vision_agent("", state["query"])
     state["answer"] = redact(result["answer"])
     state["agent"] = "VISION_AGENT"
@@ -72,7 +72,7 @@ def vision_node(state: AthenaState) -> AthenaState:
     state["confidence"] = 0.4
     return state
 
-def escalation_check(state: AthenaState) -> AthenaState:
+def escalation_check(state: DeskmateState) -> DeskmateState:
     needs_esc = (state.get("confidence") or 0) < 0.5
     state["needs_escalation"] = needs_esc
     if needs_esc:
@@ -119,7 +119,7 @@ def escalation_check(state: AthenaState) -> AthenaState:
         state["answer"] = "I'm not confident enough in this answer — this has been routed to a human for follow-up."
     return state
 
-def route_decision(state: AthenaState) -> str:
+def route_decision(state: DeskmateState) -> str:
     intent = state.get("intent", "docs_question")
     return {
         "docs_question": "docs",
@@ -130,7 +130,7 @@ def route_decision(state: AthenaState) -> str:
     }.get(intent, "docs")
 
 # Build the LangGraph StateGraph
-graph = StateGraph(AthenaState)
+graph = StateGraph(DeskmateState)
 
 # Add all nodes
 graph.add_node("router", route_node)
@@ -158,11 +158,11 @@ graph.add_edge("ticket", "escalation_check")
 graph.add_edge("vision", "escalation_check")
 graph.add_edge("escalation_check", END)
 
-athena_graph = graph.compile()
+deskmate_graph = graph.compile()
 
 if __name__ == "__main__":
     import pprint
     # Visual check of graph compilation
     print("Graph compiled successfully. Executing test query:")
-    result = athena_graph.invoke({"query": "How do I contribute to this repo?"})
+    result = deskmate_graph.invoke({"query": "How do I contribute to this repo?"})
     pprint.pprint(result)

@@ -5,7 +5,7 @@ import os
 
 model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 client = chromadb.PersistentClient(path="data/chroma_db")
-collection = client.get_or_create_collection("athena_docs")
+collection = client.get_or_create_collection("deskmate_docs")
 
 def chunk_text(text, size=500, overlap=50):
     words = text.split()

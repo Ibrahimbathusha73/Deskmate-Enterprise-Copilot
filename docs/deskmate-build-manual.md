@@ -1,6 +1,6 @@
-# Athena Build Manual — Zero-Cost, Start to Finish
+# Deskmate Build Manual — Zero-Cost, Start to Finish
 
-This is the step-by-step manual for building the project described in `athena-enterprise-copilot-project-spec.md`. Follow it in order. Every tool used is free. Each phase ends with something runnable — don't move on until it works.
+This is the step-by-step manual for building the project described in `deskmate-enterprise-copilot-project-spec.md`. Follow it in order. Every tool used is free. Each phase ends with something runnable — don't move on until it works.
 
 ---
 
@@ -21,7 +21,7 @@ git --version
 
 **Project structure — create this now:**
 ```
-athena/
+deskmate/
 ├── data/                  # raw + processed corpora
 ├── ingestion/             # loaders, chunkers, embedders
 ├── retrieval/             # hybrid search, reranking
@@ -38,8 +38,8 @@ athena/
 ```
 
 ```bash
-mkdir -p athena/{data,ingestion,retrieval,agents,orchestrator,eval,api,frontend,ops,tests}
-cd athena
+mkdir -p deskmate/{data,ingestion,retrieval,agents,orchestrator,eval,api,frontend,ops,tests}
+cd deskmate
 python -m venv venv && source venv/bin/activate
 git init
 ```
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 # ingestion/fetch_edgar.py
 import requests, os
 
-HEADERS = {"User-Agent": "Athena Project youremail@example.com"}
+HEADERS = {"User-Agent": "Deskmate Project youremail@example.com"}
 
 def fetch_filing(cik="0000320193", accession="0000320193-23-000106"):
     # example: Apple 10-K — swap CIK/accession for any public filer
@@ -142,7 +142,7 @@ import json, textwrap
 
 model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 client = chromadb.PersistentClient(path="data/chroma_db")
-collection = client.get_or_create_collection("athena_docs")
+collection = client.get_or_create_collection("deskmate_docs")
 
 def chunk_text(text, size=500, overlap=50):
     words = text.split()
@@ -182,7 +182,7 @@ import chromadb
 embed_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 client = chromadb.PersistentClient(path="data/chroma_db")
-collection = client.get_or_create_collection("athena_docs")
+collection = client.get_or_create_collection("deskmate_docs")
 
 def hybrid_search(query, top_k=20, final_k=5):
     # dense
@@ -219,7 +219,7 @@ def hybrid_search(query, top_k=20, final_k=5):
 # orchestrator/state.py
 from typing import TypedDict, Optional, List
 
-class AthenaState(TypedDict):
+class DeskmateState(TypedDict):
     query: str
     intent: Optional[str]
     retrieved_chunks: Optional[List[dict]]
@@ -361,40 +361,40 @@ def get_open_github_issues(repo: str) -> dict:
 ```python
 # orchestrator/graph.py
 from langgraph.graph import StateGraph, END
-from orchestrator.state import AthenaState
+from orchestrator.state import DeskmateState
 from agents.router import classify_intent
 from agents.docs_rag_agent import docs_rag_agent
 from agents.table_agent import table_agent
 from agents.ticket_agent import ticket_agent
 
-def route_node(state: AthenaState) -> AthenaState:
+def route_node(state: DeskmateState) -> DeskmateState:
     state["intent"] = classify_intent(state["query"])
     return state
 
-def docs_node(state: AthenaState) -> AthenaState:
+def docs_node(state: DeskmateState) -> DeskmateState:
     result = docs_rag_agent(state["query"])
     state["answer"] = result["answer"]
     state["retrieved_chunks"] = result["chunks"]
     state["confidence"] = 0.9 if result["chunks"] else 0.2
     return state
 
-def ticket_node(state: AthenaState) -> AthenaState:
+def ticket_node(state: DeskmateState) -> DeskmateState:
     result = ticket_agent(state["query"])
     state["answer"] = result["raw"]
     state["confidence"] = 0.8
     return state
 
-def escalation_check(state: AthenaState) -> AthenaState:
+def escalation_check(state: DeskmateState) -> DeskmateState:
     state["needs_escalation"] = (state.get("confidence") or 0) < 0.5
     return state
 
-def route_decision(state: AthenaState) -> str:
+def route_decision(state: DeskmateState) -> str:
     return {
         "docs_question": "docs",
         "ticket_request": "ticket",
     }.get(state["intent"], "docs")
 
-graph = StateGraph(AthenaState)
+graph = StateGraph(DeskmateState)
 graph.add_node("router", route_node)
 graph.add_node("docs", docs_node)
 graph.add_node("ticket", ticket_node)
@@ -406,13 +406,13 @@ graph.add_edge("docs", "escalation_check")
 graph.add_edge("ticket", "escalation_check")
 graph.add_edge("escalation_check", END)
 
-athena_graph = graph.compile()
+deskmate_graph = graph.compile()
 ```
 
 Add `table_node` and `vision_node` the same way once the two above work end to end. **Checkpoint for Phase 2:**
 ```python
-from orchestrator.graph import athena_graph
-result = athena_graph.invoke({"query": "How do I contribute to this repo?"})
+from orchestrator.graph import deskmate_graph
+result = deskmate_graph.invoke({"query": "How do I contribute to this repo?"})
 print(result["answer"], result["needs_escalation"])
 ```
 
@@ -439,14 +439,14 @@ import json
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevancy, context_precision, context_recall
 from datasets import Dataset
-from orchestrator.graph import athena_graph
+from orchestrator.graph import deskmate_graph
 
 with open("eval/golden_set.json") as f:
     golden = json.load(f)
 
 records = []
 for item in golden:
-    result = athena_graph.invoke({"query": item["question"]})
+    result = deskmate_graph.invoke({"query": item["question"]})
     records.append({
         "question": item["question"],
         "answer": result.get("answer", ""),
@@ -458,7 +458,7 @@ ds = Dataset.from_list(records)
 scores = evaluate(ds, metrics=[faithfulness, answer_relevancy, context_precision, context_recall])
 print(scores)
 
-with open("eval/last_run_scores.json", "w") as f:
+with open("eval/last_run_scores.json") as f:
     json.dump(dict(scores), f, indent=2)
 ```
 
@@ -610,12 +610,12 @@ Run this on ingestion (before storing chunks) and optionally on output. For a st
 ```python
 # frontend/app.py
 import streamlit as st
-from orchestrator.graph import athena_graph
+from orchestrator.graph import deskmate_graph
 
-st.title("Athena — Enterprise Copilot")
+st.title("Deskmate — Enterprise Copilot")
 query = st.text_input("Ask a question")
 if query:
-    result = athena_graph.invoke({"query": query})
+    result = deskmate_graph.invoke({"query": query})
     st.write(result["answer"])
     if result.get("needs_escalation"):
         st.warning("Low confidence — this would be escalated to a human in production.")
@@ -637,8 +637,8 @@ EXPOSE 8501
 CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
 ```
 ```bash
-docker build -t athena -f ops/Dockerfile .
-docker run -p 8501:8501 --env-file .env athena
+docker build -t deskmate -f ops/Dockerfile .
+docker run -p 8501:8501 --env-file .env deskmate
 ```
 
 ### 6.3 Deploy to Hugging Face Spaces (free)
@@ -646,7 +646,7 @@ docker run -p 8501:8501 --env-file .env athena
 1. Create a new Space at https://huggingface.co/new-space → SDK: **Docker** (or Streamlit template directly).
 2. Push your repo:
 ```bash
-git remote add hf https://huggingface.co/spaces/<your-username>/athena
+git remote add hf https://huggingface.co/spaces/<your-username>/deskmate
 git push hf main
 ```
 3. Add `GROQ_API_KEY` (and any others) under Space Settings → Repository secrets.

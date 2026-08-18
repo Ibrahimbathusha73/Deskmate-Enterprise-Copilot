@@ -8,7 +8,7 @@ project_root = "/home/sets/athena"
 load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
 
 # Import graph
-from orchestrator.graph import athena_graph
+from orchestrator.graph import deskmate_graph
 
 import redis
 
@@ -19,7 +19,7 @@ def run_suite():
         r.flushdb()
         print("[CACHE CLEAR] Cleared Redis semantic cache before executing tests.")
     except Exception as e:
-        print(f"[CACHE CLEAR WARNING] Could not clear Redis: {e}")
+        print("[CACHE CLEAR WARNING] Could not clear Redis: {e}")
 
     adversarial_path = "eval/adversarial_set.json"
     if not os.path.exists(adversarial_path):
@@ -41,7 +41,7 @@ def run_suite():
         print(f"Query: {query}")
         
         try:
-            state = athena_graph.invoke({"query": query})
+            state = deskmate_graph.invoke({"query": query})
             answer = state.get("answer") or ""
             intent = state.get("intent") or ""
             

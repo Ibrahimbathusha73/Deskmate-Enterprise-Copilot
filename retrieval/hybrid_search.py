@@ -7,7 +7,7 @@ import chromadb
 embed_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 client = chromadb.PersistentClient(path="data/chroma_db")
-collection = client.get_or_create_collection("athena_docs")
+collection = client.get_or_create_collection("deskmate_docs")
 
 def hybrid_search(query, top_k=20, final_k=3):
     # dense search

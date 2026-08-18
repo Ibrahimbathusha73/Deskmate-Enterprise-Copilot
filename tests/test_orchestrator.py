@@ -1,9 +1,9 @@
 import pytest
-from orchestrator.graph import athena_graph
+from orchestrator.graph import deskmate_graph
 
 def test_docs_route():
     query = "What is the pipeline device validation enhancement?"
-    state = athena_graph.invoke({"query": query})
+    state = deskmate_graph.invoke({"query": query})
     
     assert state["intent"] == "docs_question"
     assert "answer" in state and state["answer"] is not None
@@ -14,7 +14,7 @@ def test_docs_route():
 
 def test_table_route():
     query = "What is the total cost of all active devices in Engineering?"
-    state = athena_graph.invoke({"query": query})
+    state = deskmate_graph.invoke({"query": query})
     
     assert state["intent"] == "table_question"
     assert "answer" in state and state["answer"] is not None
@@ -23,7 +23,7 @@ def test_table_route():
 
 def test_ticket_route():
     query = "My computer won't turn on and I have a client meeting in 5 minutes! Help!"
-    state = athena_graph.invoke({"query": query})
+    state = deskmate_graph.invoke({"query": query})
     
     assert state["intent"] == "ticket_request"
     assert "answer" in state and state["answer"] is not None
@@ -34,7 +34,7 @@ def test_ticket_route():
 def test_vague_unanswerable_escalation():
     # Deliberately vague/nonsense question
     query = "asdfghjkl qwertyuiop xyz"
-    state = athena_graph.invoke({"query": query})
+    state = deskmate_graph.invoke({"query": query})
     
     # Confidence should be low and needs_escalation should be True
     assert state["needs_escalation"] is True

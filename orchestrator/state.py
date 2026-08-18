@@ -1,6 +1,6 @@
 from typing import TypedDict, Optional, List
 
-class AthenaState(TypedDict):
+class DeskmateState(TypedDict):
     query: str
     intent: Optional[str]
     retrieved_chunks: Optional[List[dict]]

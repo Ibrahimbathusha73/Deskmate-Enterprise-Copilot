@@ -9,7 +9,7 @@ from ragas.llms import LangchainLLMWrapper
 from langchain_groq import ChatGroq
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from ragas.embeddings import LangchainEmbeddingsWrapper
-from orchestrator.graph import athena_graph
+from orchestrator.graph import deskmate_graph
 
 # Load environment variables
 load_dotenv()
@@ -42,7 +42,7 @@ def run_evaluation():
         time.sleep(1.0)
         
         try:
-            result = athena_graph.invoke({"query": item["question"]})
+            result = deskmate_graph.invoke({"query": item["question"]})
             
             # Retrieve answer and truncate
             answer = result.get("answer", "")

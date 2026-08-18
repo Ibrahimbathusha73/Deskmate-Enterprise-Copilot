@@ -1,5 +1,5 @@
 ---
-title: Athena
+title: Deskmate
 emoji: 🛡️
 colorFrom: blue
 colorTo: indigo
@@ -8,15 +8,15 @@ app_port: 7860
 pinned: false
 ---
 
-# Athena Enterprise Copilot Case Study
+# Deskmate Enterprise Copilot Case Study
 
-👉 **[Live Demo on Streamlit Community Cloud](https://athena-copilot.streamlit.app)**  
-*(Alternative Hugging Face Space: [Athena on HF Spaces](https://huggingface.co/spaces/Ibrahimbathusha73/athena))*
+👉 **[Live Demo on Streamlit Community Cloud](https://deskmate-copilot.streamlit.app)**  
+*(Alternative Hugging Face Space: [Deskmate on HF Spaces](https://huggingface.co/spaces/Ibrahimbathusha73/deskmate))*
 
-Athena is an enterprise-grade multi-agent copilot designed to securely and efficiently triage customer queries, search database tables, retrieve relevant engineering documentation, and handle ticket routing under strict security policies.
+Deskmate is an enterprise-grade multi-agent copilot designed to securely and efficiently triage customer queries, search database tables, retrieve relevant engineering documentation, and handle ticket routing under strict security policies.
 
 ## Problem Statement
-Enterprises struggle to deploy LLM copilots because of high latency, high API costs, lack of auditability, and vulnerability to adversarial prompt injections or PII leakage. Athena solves these problems by combining a LangGraph multi-agent orchestration topology with semantic caching, model cascading, regex-based PII redaction, and an automated human-in-the-loop SQLite escalation gate.
+Enterprises struggle to deploy LLM copilots because of high latency, high API costs, lack of auditability, and vulnerability to adversarial prompt injections or PII leakage. Deskmate solves these problems by combining a LangGraph multi-agent orchestration topology with semantic caching, model cascading, regex-based PII redaction, and an automated human-in-the-loop SQLite escalation gate.
 
 ---
 

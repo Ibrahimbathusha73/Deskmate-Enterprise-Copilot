@@ -7,7 +7,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
 
 st.set_page_config(
-    page_title="ATHENA",
+    page_title="DESKMATE",
     layout="centered"
 )
 
@@ -15,7 +15,7 @@ st.set_page_config(
 def ensure_index_built():
     import chromadb
     client = chromadb.PersistentClient(path="data/chroma_db")
-    collection = client.get_or_create_collection("athena_docs")
+    collection = client.get_or_create_collection("deskmate_docs")
     if collection.count() == 0:
         # index is empty — run the same ingestion Phase 1 used
         from ingestion.fetch_github_issues import fetch_issues
@@ -37,7 +37,7 @@ def ensure_index_built():
 with st.spinner("Building knowledge base..."):
     ensure_index_built()
 
-from orchestrator.graph import athena_graph
+from orchestrator.graph import deskmate_graph
 
 # Initialize session state variables
 if "history" not in st.session_state:
@@ -241,7 +241,7 @@ st.markdown("""
 with st.sidebar:
     st.markdown(f"""
     <div class="sidebar-container">
-        <div class="wordmark">ATHENA</div>
+        <div class="wordmark">DESKMATE</div>
         <div class="wordmark-sub">Enterprise Secure Copilot</div>
         <hr style="margin: 15px 0; border: 0; border-top: 0.5px solid #2A2F38;" />
         <div class="stat-item">Total Queries: <span class="stat-val-normal">{st.session_state.total_queries}</span></div>
@@ -249,7 +249,7 @@ with st.sidebar:
         <div class="stat-item">Cache Hits: <span class="stat-val-teal">{st.session_state.cache_hits}</span></div>
         <hr style="margin: 15px 0; border: 0; border-top: 0.5px solid #2A2F38;" />
         <div class="sidebar-desc">
-            Athena is a multi-agent secure copilot. Triages queries, executes database lookup, and references documentation with automatic caching and escalation policies.
+            Deskmate is a multi-agent secure copilot. Triages queries, executes database lookup, and references documentation with automatic caching and escalation policies.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -311,7 +311,7 @@ def handle_query():
     import time
     start_time = time.time()
     try:
-        result = athena_graph.invoke({"query": query})
+        result = deskmate_graph.invoke({"query": query})
         latency = time.time() - start_time
         
         answer = result.get("answer", "No response generated.")
