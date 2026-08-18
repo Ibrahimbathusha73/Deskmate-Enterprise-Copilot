@@ -3,13 +3,41 @@ torch.set_num_threads(1)
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import chromadb
+import streamlit as st
 
-embed_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
-client = chromadb.PersistentClient(path="data/chroma_db")
-collection = client.get_or_create_collection("deskmate_docs")
+@st.cache_resource
+def get_embed_model():
+    return SentenceTransformer("BAAI/bge-small-en-v1.5")
+
+@st.cache_resource
+def get_reranker():
+    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+
+@st.cache_resource
+def get_chroma_client():
+    return chromadb.PersistentClient(path="data/chroma_db")
+
+@st.cache_resource
+def get_collection():
+    client = get_chroma_client()
+    return client.get_or_create_collection("deskmate_docs")
+
+def __getattr__(name):
+    if name == "collection":
+        return get_collection()
+    if name == "embed_model":
+        return get_embed_model()
+    if name == "reranker":
+        return get_reranker()
+    if name == "client":
+        return get_chroma_client()
+    raise AttributeError(f"module {__name__} has no attribute {name}")
 
 def hybrid_search(query, top_k=20, final_k=3):
+    embed_model = get_embed_model()
+    reranker = get_reranker()
+    collection = get_collection()
+
     # dense search
     q_emb = embed_model.encode([query]).tolist()
     dense_results = collection.query(query_embeddings=q_emb, n_results=top_k)
@@ -54,3 +82,4 @@ if __name__ == "__main__":
     res = hybrid_search(q)
     for r in res:
         print(f"ID: {r['id']}, Score: {r['score']:.4f}\nText: {r['text'][:200]}...\n")
+
