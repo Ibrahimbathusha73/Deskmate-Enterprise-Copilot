@@ -1,10 +1,11 @@
 import json
 import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 
 # Ensure environment is loaded
-project_root = "/home/sets/athena"
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
 
 # Import graph

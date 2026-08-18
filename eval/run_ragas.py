@@ -1,6 +1,8 @@
 import json
 import time
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 from datasets import Dataset
 from ragas import evaluate
