@@ -2,7 +2,7 @@ import requests
 import json
 import os
 
-def fetch_issues(repo="huggingface/transformers", n_pages=3):
+def fetch_issues(repo="huggingface/transformers", n_pages=5):
     issues = []
     headers = {}
     

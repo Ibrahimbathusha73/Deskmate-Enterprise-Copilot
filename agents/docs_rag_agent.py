@@ -68,6 +68,27 @@ def docs_rag_agent(query: str) -> dict:
             "cache_status": "MISS"
         }
         
+    # 2.5 Short-circuit if retrieved chunks are below relevance threshold
+    max_score = max(c["score"] for c in chunks)
+    if max_score <= -4.0:
+        print(f"[RECON-SHORT-CIRCUIT] Top retrieved chunk score {max_score:.4f} is <= -4.0. Short-circuiting LLM calls.")
+        answer = "I could not find any relevant documentation in my knowledge base to answer this question."
+        langfuse_context.update_current_observation(
+            input=query,
+            output=answer,
+            model="none",
+            usage={
+                "prompt_tokens": 0,
+                "completion_tokens": 0
+            }
+        )
+        return {
+            "answer": answer,
+            "chunks": chunks,
+            "model_used": "N/A",
+            "cache_status": "MISS"
+        }
+
     context_parts = []
     for c in chunks:
         context_parts.append(f"Source ID: {c['id']}\nContent: {c['text']}")
