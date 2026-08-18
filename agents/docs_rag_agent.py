@@ -43,7 +43,9 @@ def docs_rag_agent(query: str) -> dict:
         )
         return {
             "answer": cached_answer,
-            "chunks": chunks
+            "chunks": chunks,
+            "model_used": "semantic-cache-hit",
+            "cache_status": "HIT"
         }
 
     # 2. Run retrieval
@@ -61,7 +63,9 @@ def docs_rag_agent(query: str) -> dict:
         )
         return {
             "answer": answer,
-            "chunks": []
+            "chunks": [],
+            "model_used": "N/A",
+            "cache_status": "MISS"
         }
         
     context_parts = []
@@ -128,7 +132,9 @@ Cite your sources by mentioning their source ID. If the context does not contain
 
     return {
         "answer": final_answer,
-        "chunks": chunks
+        "chunks": chunks,
+        "model_used": model_used,
+        "cache_status": "MISS"
     }
 
 if __name__ == "__main__":

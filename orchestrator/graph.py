@@ -16,6 +16,9 @@ def docs_node(state: AthenaState) -> AthenaState:
     result = docs_rag_agent(state["query"])
     state["answer"] = redact(result["answer"])
     state["retrieved_chunks"] = result["chunks"]
+    state["agent"] = "DOCS_RAG_AGENT"
+    state["model"] = result.get("model_used", "openai/gpt-oss-20b")
+    state["cache_status"] = result.get("cache_status", "MISS")
     
     # Assess confidence using the Cross-Encoder score of the top retrieved chunk.
     # Scores > -4.0 suggest a relevant document match.
@@ -34,6 +37,9 @@ def table_node(state: AthenaState) -> AthenaState:
     import pandas as pd
     import os
     csv_path = "data/sample_table.csv"
+    state["agent"] = "TABLE_AGENT"
+    state["model"] = "openai/gpt-oss-20b"
+    state["cache_status"] = "N/A"
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         result = table_agent(state["query"], df)
@@ -50,12 +56,18 @@ def table_node(state: AthenaState) -> AthenaState:
 def ticket_node(state: AthenaState) -> AthenaState:
     result = ticket_agent(state["query"])
     state["answer"] = redact(f"Priority: {result['priority']}\nRouting: {result['routing']}")
+    state["agent"] = "TICKET_AGENT"
+    state["model"] = "openai/gpt-oss-20b"
+    state["cache_status"] = "N/A"
     state["confidence"] = 0.8
     return state
 
 def vision_node(state: AthenaState) -> AthenaState:
     result = vision_agent("", state["query"])
     state["answer"] = redact(result["answer"])
+    state["agent"] = "VISION_AGENT"
+    state["model"] = "N/A"
+    state["cache_status"] = "N/A"
     # Since it is a stub / not implemented, confidence is low to force escalation
     state["confidence"] = 0.4
     return state

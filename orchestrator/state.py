@@ -7,3 +7,6 @@ class AthenaState(TypedDict):
     answer: Optional[str]
     confidence: Optional[float]
     needs_escalation: Optional[bool]
+    agent: Optional[str]
+    model: Optional[str]
+    cache_status: Optional[str]
