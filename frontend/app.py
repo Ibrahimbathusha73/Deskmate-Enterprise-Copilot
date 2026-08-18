@@ -6,6 +6,12 @@ from dotenv import load_dotenv
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
 
+st.set_page_config(
+    page_title="Athena — Enterprise Copilot",
+    page_icon="🛡️",
+    layout="centered"
+)
+
 @st.cache_resource
 def ensure_index_built():
     import chromadb
@@ -33,12 +39,6 @@ with st.spinner("Building knowledge base, first load may take a minute..."):
     ensure_index_built()
 
 from orchestrator.graph import athena_graph
-
-st.set_page_config(
-    page_title="Athena — Enterprise Copilot",
-    page_icon="🛡️",
-    layout="centered"
-)
 
 st.title("🛡️ Athena — Enterprise Copilot")
 st.write("Welcome to Athena, your secure multi-agent RAG copilot. Ask any question about repository docs, ticketing systems, or asset costs.")
