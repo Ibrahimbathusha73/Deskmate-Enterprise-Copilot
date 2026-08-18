@@ -303,14 +303,11 @@ else:
                 </details>
                 """, unsafe_allow_html=True)
 
-# Main Query input container
-query = st.text_input("Ask a question", placeholder="Type your query here...", key="user_query_val")
-
-# Process query input
-if query and query != st.session_state.temp_query:
-    st.session_state.temp_query = query
-    
-    # Process
+def handle_query():
+    query = st.session_state.user_query_val
+    if not query or not query.strip():
+        return
+        
     import time
     start_time = time.time()
     try:
@@ -360,5 +357,8 @@ if query and query != st.session_state.temp_query:
             "needs_escalation": True
         })
     
+    # Safely clear the input field inside the callback
     st.session_state.user_query_val = ""
-    st.rerun()
+
+# Main Query input container
+st.text_input("Ask a question", placeholder="Type your query here...", key="user_query_val", on_change=handle_query)
