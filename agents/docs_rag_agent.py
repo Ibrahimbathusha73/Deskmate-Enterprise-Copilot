@@ -45,7 +45,8 @@ def docs_rag_agent(query: str) -> dict:
             "answer": cached_answer,
             "chunks": chunks,
             "model_used": "semantic-cache-hit",
-            "cache_status": "HIT"
+            "cache_status": "HIT",
+            "confidence": 0.9
         }
 
     # 2. Run retrieval
@@ -65,28 +66,56 @@ def docs_rag_agent(query: str) -> dict:
             "answer": answer,
             "chunks": [],
             "model_used": "N/A",
-            "cache_status": "MISS"
+            "cache_status": "MISS",
+            "confidence": 0.2
         }
         
-    # 2.5 Short-circuit if retrieved chunks are below relevance threshold
+    prompt_tokens = 0
+    completion_tokens = 0
+
+    # 2.5 Short-circuit check
     max_score = max(c["score"] for c in chunks)
+    passed_relevance = True
+    
     if max_score <= -4.0:
-        print(f"[RECON-SHORT-CIRCUIT] Top retrieved chunk score {max_score:.4f} is <= -4.0. Short-circuiting LLM calls.")
+        print(f"[RECON-SHORT-CIRCUIT] Top retrieved chunk score {max_score:.4f} is <= -4.0. Running secondary relevance check...")
+        passages = "\n\n".join([c["text"] for c in chunks[:2]])
+        check_prompt = f"Does this passage contain information that answers this question? Passage: {passages}. Question: {query}. Answer only YES or NO."
+        
+        resp_check = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[{"role": "user", "content": check_prompt}],
+            temperature=0.0,
+        )
+        check_answer = resp_check.choices[0].message.content.strip().upper()
+        prompt_tokens += resp_check.usage.prompt_tokens
+        completion_tokens += resp_check.usage.completion_tokens
+        print(f"[SECONDARY CHECK] Response: '{check_answer}'")
+        
+        if "YES" in check_answer:
+            print("[SECONDARY CHECK] Yes! Proceeding to generate the full answer normally.")
+            passed_relevance = True
+        else:
+            print("[SECONDARY CHECK] No. Proceeding with escalation.")
+            passed_relevance = False
+            
+    if not passed_relevance:
         answer = "I could not find any relevant documentation in my knowledge base to answer this question."
         langfuse_context.update_current_observation(
             input=query,
             output=answer,
             model="none",
             usage={
-                "prompt_tokens": 0,
-                "completion_tokens": 0
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens
             }
         )
         return {
             "answer": answer,
             "chunks": chunks,
             "model_used": "N/A",
-            "cache_status": "MISS"
+            "cache_status": "MISS",
+            "confidence": 0.3
         }
 
     context_parts = []
@@ -118,8 +147,8 @@ Cite your sources by mentioning their source ID. If the context does not contain
         temperature=0.2,
     )
     answer_8b = resp_8b.choices[0].message.content.strip()
-    prompt_tokens = resp_8b.usage.prompt_tokens
-    completion_tokens = resp_8b.usage.completion_tokens
+    prompt_tokens += resp_8b.usage.prompt_tokens
+    completion_tokens += resp_8b.usage.completion_tokens
     model_used = "openai/gpt-oss-20b"
     final_answer = answer_8b
 
@@ -155,7 +184,8 @@ Cite your sources by mentioning their source ID. If the context does not contain
         "answer": final_answer,
         "chunks": chunks,
         "model_used": model_used,
-        "cache_status": "MISS"
+        "cache_status": "MISS",
+        "confidence": 0.9
     }
 
 if __name__ == "__main__":

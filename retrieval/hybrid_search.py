@@ -5,22 +5,39 @@ from sentence_transformers import SentenceTransformer, CrossEncoder
 import chromadb
 import streamlit as st
 
+_embed_model = None
+_reranker = None
+_chroma_client = None
+_collection = None
+
 @st.cache_resource
 def get_embed_model():
-    return SentenceTransformer("BAAI/bge-small-en-v1.5")
+    global _embed_model
+    if _embed_model is None:
+        _embed_model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+    return _embed_model
 
 @st.cache_resource
 def get_reranker():
-    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    global _reranker
+    if _reranker is None:
+        _reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    return _reranker
 
 @st.cache_resource
 def get_chroma_client():
-    return chromadb.PersistentClient(path="data/chroma_db")
+    global _chroma_client
+    if _chroma_client is None:
+        _chroma_client = chromadb.PersistentClient(path="data/chroma_db")
+    return _chroma_client
 
 @st.cache_resource
 def get_collection():
-    client = get_chroma_client()
-    return client.get_or_create_collection("deskmate_docs")
+    global _collection
+    if _collection is None:
+        client = get_chroma_client()
+        _collection = client.get_or_create_collection("deskmate_docs")
+    return _collection
 
 def __getattr__(name):
     if name == "collection":

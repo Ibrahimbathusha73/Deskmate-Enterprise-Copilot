@@ -104,6 +104,7 @@ We deployed a model-tiering strategy in the Docs Agent:
 > The following observations have been flagged for follow-up verification:
 > 1. **Suspiciously Uniform RAGAS Scores**: The evaluation run yielded perfect `1.0` scores for Faithfulness, Context Precision, and Context Recall across the 30-item set. This uniform performance is highly unusual, especially given the inclusion of unanswerable questions. We suspect either LLM judge leniency or a logging mismatch in the scoring pipeline. These scores should be treated as unverified until audited by a human domain expert.
 > 2. **Adversarial Pass Verification**: All prompt injection red-team cases (`injection_1` through `injection_5`) passed even before agent prompt-hardening was applied. It remains unconfirmed whether this reflects genuine resistance to jailbreaking or if the off-topic nature of the injection queries simply led to low retrieval relevance scores, triggering confidence-based escalation by coincidence.
+> 3. **Reranker Phrasing Sensitivity**: Identified and mitigated via a secondary LLM relevance check for borderline retrieval scores. Borderline queries (with a cross-encoder score <= -4.0) now undergo a cheap, single-turn LLM verification to confirm if the retrieved passage answers the question before deciding to escalate.
 
 ---
 

@@ -20,9 +20,10 @@ def docs_node(state: DeskmateState) -> DeskmateState:
     state["model"] = result.get("model_used", "openai/gpt-oss-20b")
     state["cache_status"] = result.get("cache_status", "MISS")
     
-    # Assess confidence using the Cross-Encoder score of the top retrieved chunk.
-    # Scores > -4.0 suggest a relevant document match.
-    if result["chunks"]:
+    # Assess confidence using returned confidence or fallback to Cross-Encoder score of the top retrieved chunk.
+    if "confidence" in result:
+        state["confidence"] = result["confidence"]
+    elif result["chunks"]:
         max_score = max(c["score"] for c in result["chunks"])
         if max_score > -4.0:
             state["confidence"] = 0.9
