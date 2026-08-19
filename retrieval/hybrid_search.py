@@ -50,7 +50,7 @@ def __getattr__(name):
         return get_chroma_client()
     raise AttributeError(f"module {__name__} has no attribute {name}")
 
-def hybrid_search(query, top_k=20, final_k=3):
+def hybrid_search(query, top_k=10, final_k=3):
     embed_model = get_embed_model()
     reranker = get_reranker()
     collection = get_collection()
